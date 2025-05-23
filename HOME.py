@@ -11,6 +11,7 @@ st.header("RESUMATE", divider=True)
 st.subheader("Your AI-Powered Resume Builder")
 
 uploaded_file = st.file_uploader("Upload your resume in PDF format", type="pdf")
+job_desc = st.text_area("Enter the job description", placeholder="Paste job description here")
 
 # Hugging Face token input
 hf_token = st.text_input("Enter your Hugging Face token", type="password")
