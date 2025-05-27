@@ -1,6 +1,6 @@
 # ResuMate
 
-**ResuMate** is an AI-powered agent that uses **RAG (Retrieval-Augmented Generation)** designed to help job seekers improve their resumes. It analyzes your resume and provides personalized feedback to enhance its clarity, impact, and professionalism. Whether you're a fresh graduate or a seasoned professional, **ResuMate** helps you craft a resume that stands out to employers.
+**ResuMate** is your personal AI-powered resume advisor that not only critiques your resume but does it with the sass and love of your best friend. Whether you want to impress recruiters, match a job description, or just see your resume get roasted — this tool does it all.
 
 ## How ResuMate Helps
 
@@ -20,15 +20,17 @@ ResuMate makes sure your resume is job-ready by:
 
 ## How It Works
 
-1. **Upload Your Resume**: Simply upload your resume in PDF or DOCX format.
+1. **Upload Your Resume**: Simply upload your resume in PDF format.
 2. **Provide Job Description**: Enter the job description for the position you're targeting.
-3. **AI-Powered Feedback**: ResuMate’s AI agent will analyze both your resume and the job description.
-4. **Receive Suggestions**: The agent will recommend changes to improve your resume, such as:
+3. **Enter your Hugging Face Token**: Paste your Hugging Face token to authorize the AI analysis.
+🔐 Don’t have one? [Click here to get your Hugging Face Token](https://resu-mate.streamlit.app/GET_YOUR_OWN_API)
+4. **AI-Powered Feedback**: ResuMate’s AI agent will analyze both your resume and the job description.
+5. **Receive Suggestions**: The agent will recommend changes to improve your resume, such as:
 
    * Wording changes to highlight your skills.
    * Structural adjustments to make your resume more readable.
    * Formatting suggestions to ensure clarity and professionalism.
-5. **Apply the Changes**: Follow the suggestions to optimize your resume for the job you're applying for.
+6. **Apply the Changes**: Follow the suggestions to optimize your resume for the job you're applying for.
 
 ## 🚧 We're Working On It!
 
@@ -36,6 +38,20 @@ ResuMate is still in the process of being built...
 But don't worry, it's coming together faster than you can say _"Job Application!"_
 
 ![Under Construction](https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmV6d3IzMGZjdnJpZG11ZjluM2Mzd3hnNzcwOTZldms5eDFlOHh1eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/JqmupuTVZYaQX5s094/giphy.gif)
+
+## 🚀 Future Enhancements
+
+- 🔐 **Login System** – Let users save reviews securely  
+- 📥 **Downloadable PDF Reports** – Save your roasted resume report  
+- 🧪 **Mode Selector** – Choose between:
+  - Structured Resume Improvement + Keyword Injection  
+  - Friendly Roast  
+  - ATS-Focused Optimization  
+  - Match Score + Keyword Density  
+  - Professional Rewrite Helper  
+- 🎨 **UI Improvements** – Cleaner themes, animations, feedback metrics  
+- 📤 **Multi-format Support** – Support for PDF, DOCX upload  
+- 🗃️ **Review History Dashboard** – View and manage past analyses  
 
 ## Contributing
 
