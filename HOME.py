@@ -33,6 +33,17 @@ if uploaded_file is not None:
     text = extract_text_from_pdf(uploaded_file)
     st.text_area("Extracted Text", text, height=300)
 
+custom_prompt_template = """Use the Resume and Job_desc to suggest the user if any modification is needed in the 
+resume and suggest me some keywords relevant to job desc which he should add in his resume with roasting him like a 
+best friend and rate his resume
+
+resume: {all_text}
+job_desc: {job_desc}
+Question: {question}"""
+
+def custom_prompt(custom_prompt_template):
+    return PromptTemplate(template=custom_prompt_template, input_variables=["resume", "job_desc" ,"question"])
+
 # Example of how you might load your model (needs actual HuggingFace API key)
 def load_llm(huggingface_repo_id):
     from langchain_huggingface import HuggingFaceEndpoint
@@ -45,3 +56,4 @@ def load_llm(huggingface_repo_id):
     return llm
 
 huggingface_repo_id = "mistralai/Mistral-7B-Instruct-v0.3"
+HF_TOKEN = hf_token
