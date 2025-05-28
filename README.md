@@ -51,9 +51,16 @@ But don't worry, it's coming together faster than you can say _"Job Application!
   - Professional Rewrite Helper  
 - 🎨 **UI Improvements** – Cleaner themes, animations, feedback metrics  
 - 📤 **Multi-format Support** – Support for PDF, DOCX upload  
-- 🗃️ **Review History Dashboard** – View and manage past analyses  
+- 🗃️ **Review History Dashboard** – View and manage past analyses
 
 ## Contributing
 
 We welcome contributions! Feel free to fork the repository, create a branch, and submit a pull request with your changes.
+
+⭐ If you find **Resu-Mate** helpful, please consider giving it a star on GitHub! It really helps me keep improving the project and motivates me to build more cool stuff.
+
+[Star Resu-Mate ⭐](https://github.com/your-username/resu-mate)
+
+Thank you for your support! 🙏
+
 
