@@ -7,7 +7,7 @@ import pdfplumber
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 import os
-
+from langchain_huggingface import HuggingFaceEndpoint
 
 st.header("RESUMATE", divider=True)
 st.subheader("Your AI-Powered Resume Builder")
@@ -15,12 +15,10 @@ st.subheader("Your AI-Powered Resume Builder")
 uploaded_file = st.file_uploader("Upload your resume in PDF format", type="pdf")
 job_desc = st.text_area("Enter the job description", placeholder="Paste job description here")
 
-# Input for HUGGING_FACE API TOKEN
 hf_token = st.text_input("Enter your Hugging Face token", type="password")
 if hf_token:
     os.environ["HUGGINGFACEHUB_API_TOKEN"] = hf_token
     st.success("Hugging Face token set successfully!")
-
 
 def extract_text_from_pdf(uploaded_file):
     all_text = ""
@@ -29,45 +27,46 @@ def extract_text_from_pdf(uploaded_file):
             all_text += page.extract_text() + "\n"
     return all_text
 
-
 if uploaded_file is not None:
     st.success(f"{uploaded_file.name} uploaded successfully!")
     text = extract_text_from_pdf(uploaded_file)
     st.text_area("Extracted Text", text, height=300)
 
-custom_prompt_template = """You're the user's brutally honest best friend who just happens to be an expert hiring manager. Review their resume against the job_desc. 
-1. Roast their resume like a true friend — but give genuinely helpful, practical advice.
-2. Point out where they messed up, what’s missing, and how they can fix it.
-3. Suggest killer keywords that make them look like the ultimate fit for the role.
-4. Give them a "Friend Rating" out of 10 for how job-ready their resume is.
+custom_prompt_template =  """
+You're the user's brutally honest best friend who is also an expert AI hiring manager. Review their resume against the job description, and give structured feedback.
+
+Break it down like this:
+
+1. ✅ What's Good: Highlight the strong parts of their resume.
+2. ❌ What's Missing: Point out what crucial skills, experiences, or qualifications are missing — especially compared to the job description.
+3. 🔧 Suggestions: Practical advice to improve weak sections (objective, projects, skills, etc).
+4. 🧠 Killer Keywords to Add: Suggest relevant keywords and buzzwords from the job description that they should add to pass ATS filters and impress hiring managers.
+5. 🧑‍⚖️ Friend Rating: Rate the resume out of 10 for job readiness and give a final one-liner like a bestie would.
+
+Be clear, supportive, and a bit cheeky — like a friend who *wants them to win* but won't sugarcoat the truth.
 
 resume: {resume}
 job_desc: {job_desc}
-question: {question}"""
-
+question: {question}
+"""
 
 prompt = PromptTemplate(
     template=custom_prompt_template,
     input_variables=["resume", "job_desc", "question"]
 )
 
-def load_llm(huggingface_repo_id):
-    from langchain_huggingface import HuggingFaceEndpoint
-    llm = HuggingFaceEndpoint(
-        repo_id=huggingface_repo_id,
+huggingface_repo_id = "HuggingFaceH4/zephyr-7b-beta"
+
+def load_llm(repo_id):
+    return HuggingFaceEndpoint(
+        repo_id=repo_id,
         temperature=0.5,
         huggingfacehub_api_token=hf_token,
     )
-    return llm
-
-huggingface_repo_id = "mistralai/Mistral-7B-Instruct-v0.3"
-
 
 if uploaded_file and job_desc and hf_token:
     llm = load_llm(huggingface_repo_id)
-    
     question = "How can this resume be strengthened to match the job description?"
-
     chain = LLMChain(llm=llm, prompt=prompt)
 
     if st.button("Analyze My Resume"):
@@ -79,4 +78,4 @@ if uploaded_file and job_desc and hf_token:
             })
         st.subheader("Real Talk: Resume Review 💬")
         st.write(response)
-        st.success("Analyzed Like a Pro 🔍")
+        st.success("Review Complete — Ready to Level Up 🎯")
