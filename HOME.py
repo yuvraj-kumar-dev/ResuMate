@@ -32,23 +32,21 @@ if uploaded_file is not None:
     text = extract_text_from_pdf(uploaded_file)
     st.text_area("Extracted Text", text, height=300)
 
-custom_prompt_template =  """
-You're the user's brutally honest best friend who is also an expert AI hiring manager. Review their resume against the job description, and give structured feedback.
+custom_prompt_template =  custom_prompt_template = """
+You're the user's brutally honest best friend and an expert hiring manager. Review their resume against the job description and follow the structure below:
 
-Break it down like this:
+1. **What's Good (✅):** Point out how their resume aligns with the job description.
+2. **What's Missing (❌):** Mention 2–4 important gaps or mismatches with the job.
+3. **Suggestions (🔧):** Give clear, actionable improvements and Suggest 5–10 high-impact keywords they should include.
+4. **Friend Rating (📊):** Honestly Rate their job readiness out of 10, with a quick reason.
 
-1. ✅ What's Good: Highlight the strong parts of their resume.
-2. ❌ What's Missing: Point out what crucial skills, experiences, or qualifications are missing — especially compared to the job description.
-3. 🔧 Suggestions: Practical advice to improve weak sections (objective, projects, skills, etc).
-4. 🧠 Killer Keywords to Add: Suggest relevant keywords and buzzwords from the job description that they should add to pass ATS filters and impress hiring managers.
-5. 🧑‍⚖️ Friend Rating: Rate the resume out of 10 for job readiness and give a final one-liner like a bestie would.
+Keep your tone honest, precise, and supportive — like a best friend who wants them to succeed.
 
-Be clear, supportive, and a bit cheeky — like a friend who *wants them to win* but won't sugarcoat the truth.
-
-resume: {resume}
-job_desc: {job_desc}
-question: {question}
+Resume: {resume}
+Job Description: {job_desc}
+Question: {question}
 """
+
 
 prompt = PromptTemplate(
     template=custom_prompt_template,
