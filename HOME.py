@@ -8,6 +8,8 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 import os
 from langchain_huggingface import HuggingFaceEndpoint
+import fpdf
+import base64
 
 st.header("RESUMATE", divider=True)
 st.subheader("Your AI-Powered Resume Builder")
@@ -32,19 +34,34 @@ if uploaded_file is not None:
     text = extract_text_from_pdf(uploaded_file)
     st.text_area("Extracted Text", text, height=300)
 
-custom_prompt_template =  custom_prompt_template = """
-You're the user's brutally honest best friend and an expert hiring manager. Review their resume against the job description and follow the structure below:
+custom_prompt_template = """You're the user's brutally honest best friend who also happens to be an expert hiring manager.
+Your task is to review their resume in light of the job description. Please follow this **strict output format**:
 
-1. **What's Good (✅):** Point out how their resume aligns with the job description.
-2. **What's Missing (❌):** Mention 2–4 important gaps or mismatches with the job.
-3. **Suggestions (🔧):** Give clear, actionable improvements and Suggest 5–10 high-impact keywords they should include.
-4. **Friend Rating (📊):** Honestly Rate their job readiness out of 10, with a quick reason.
+###Roast:
+- [Write a brutally honest but helpful roast of the resume. (2-3 sentences)]
 
-Keep your tone honest, precise, and supportive — like a best friend who wants them to succeed.
+###What is Good:
+- [Highlight strengths in paragraph form.]
 
-Resume: {resume}
-Job Description: {job_desc}
-Question: {question}
+###What is Missing:
+- [Mention gaps or missing elements in paragraph form.]
+
+###Suggestions:
+- [Give clear, actionable suggestions in paragraph form.]
+
+###Keywords to Add:
+- [List relevant keywords from the job description that should be included in the resume. (1-2 sentences)]
+
+###Friend Rating 📊:
+Score: X/10
+
+---
+
+resume:{resume}
+
+job_desc:{job_desc}
+
+question:{question}
 """
 
 
@@ -62,6 +79,14 @@ def load_llm(repo_id):
         huggingfacehub_api_token=hf_token,
     )
 
+def createpdf(text):
+    pdf = fpdf.FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, text)
+    pdf_output = pdf.output(dest='S').encode('latin-1')
+    return pdf_output
+
 if uploaded_file and job_desc and hf_token:
     llm = load_llm(huggingface_repo_id)
     question = "How can this resume be strengthened to match the job description?"
@@ -76,4 +101,9 @@ if uploaded_file and job_desc and hf_token:
             })
         st.subheader("Real Talk: Resume Review 💬")
         st.write(response)
+        #pdf_bytes = createpdf(response)
+        #b64_pdf = base64.b64encode(pdf_bytes).decode()
         st.success("Review Complete — Ready to Level Up 🎯")
+        #href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="AI_Feedback.pdf">📄 Download Feedback as PDF</a>'
+        #st.markdown(href, unsafe_allow_html=True)
+        
