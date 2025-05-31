@@ -8,8 +8,8 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 import os
 from langchain_huggingface import HuggingFaceEndpoint
-import fpdf
-import base64
+#import fpdf
+#import base64
 
 st.header("RESUMATE", divider=True)
 st.subheader("Your AI-Powered Resume Builder")
