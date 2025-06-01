@@ -10,6 +10,7 @@ import os
 from langchain_huggingface import HuggingFaceEndpoint
 import fpdf
 import base64
+import re
 
 st.header("RESUMATE", divider=True)
 st.subheader("Your AI-Powered Resume Builder")
@@ -29,13 +30,41 @@ def extract_text_from_pdf(uploaded_file):
             all_text += page.extract_text() + "\n"
     return all_text
 
+def clean_response(text):
+    text = re.sub(r'[^\u0000-\u2FFF]', '', text)
+    text = re.sub(r'[\'"‘’“”«»‹›`´]', '', text)
+    return text 
+
 if uploaded_file is not None:
     st.success(f"{uploaded_file.name} uploaded successfully!")
     text = extract_text_from_pdf(uploaded_file)
     st.text_area("Extracted Text", text, height=300)
 
+button_style = """
+    <style>
+        .download-button {
+            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .download-button:hover {
+            background: linear-gradient(135deg, #e33e26, #e0355c);
+        }
+    </style>
+"""
+
 custom_prompt_template = """You're the user's brutally honest best friend who also happens to be an expert hiring manager.
-Your task is to review their resume in light of the job description. Please follow this **strict output format**:
+Your task is to review their resume in light of the job description. Please follow this **strict output format** and don't use emojis and **not** include "assistant:" or any role tag:
+Do not continue the conversation after the Friend Rating. End the response immediately after the rating.
 
 ###Roast:
 - [Write a brutally honest but helpful roast of the resume. (2-3 sentences)]
@@ -52,7 +81,7 @@ Your task is to review their resume in light of the job description. Please foll
 ###Keywords to Add:
 - [List relevant keywords from the job description that should be included in the resume. (1-2 sentences)]
 
-###Friend Rating 📊:
+###Friend Rating:
 Score: X/10
 
 ---
@@ -101,9 +130,10 @@ if uploaded_file and job_desc and hf_token:
             })
         st.subheader("Real Talk: Resume Review 💬")
         st.write(response)
-        #pdf_bytes = createpdf(response)
-        #b64_pdf = base64.b64encode(pdf_bytes).decode()
+        pdf_bytes = createpdf(response)
+        b64_pdf = base64.b64encode(pdf_bytes).decode()
         st.success("Review Complete — Ready to Level Up 🎯")
-        #href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="AI_Feedback.pdf">📄 Download Feedback as PDF</a>'
-        #st.markdown(href, unsafe_allow_html=True)
+        href = f'''{button_style} <a href="data:application/octet-stream;base64,{b64_pdf}" 
+        download="RESU-MATE_Feedback.pdf" class="download-button">📄 Download Review</a>'''
+        st.markdown(href, unsafe_allow_html=True)
         
