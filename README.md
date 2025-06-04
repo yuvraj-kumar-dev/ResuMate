@@ -42,7 +42,7 @@ But don't worry, it's coming together faster than you can say _"Job Application!
 ## 🚀 Future Enhancements
 
 - 🔐 **Login System** – Let users save reviews securely  
-- 📥 **Downloadable PDF Reports** – Save your roasted resume report  
+- 📥 **Downloadable PDF Reports** – Save your roasted resume report ✅ 
 - 🧪 **Mode Selector** – Choose between:
   - Structured Resume Improvement + Keyword Injection  
   - Friendly Roast  
