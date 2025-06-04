@@ -15,7 +15,8 @@ import re
 st.header("RESUMATE", divider=True)
 st.subheader("Your AI-Powered Resume Builder")
 
-uploaded_file = st.file_uploader("Upload your resume in PDF format", type="pdf")
+uploaded_file = st.file_uploader("Upload your resume in PDF format", type="pdf") 
+mode = st.radio("Select the mode", ["Default", ":rainbow[ATS Optimization]", ":rainbow[Match Score]", ":rainbow[Rewrite Helper]"])
 job_desc = st.text_area("Enter the job description", placeholder="Paste job description here")
 
 hf_token = st.text_input("Enter your Hugging Face token", type="password")
@@ -93,9 +94,85 @@ job_desc:{job_desc}
 question:{question}
 """
 
+ats_optimization_prompt = """You're an expert in Applicant Tracking Systems (ATS) and resume parsing. Your job is to evaluate the resume's ability to pass through ATS filters based on the job description. Stick to the **strict output format** below. Do not add emojis, assistant tags, or extra commentary. End the response after the Final Verdict.
+
+###Section Headers:
+- [Evaluate if standard ATS-readable headers like "Experience", "Education", etc. are used properly.]
+
+###Keyword Match:
+- [Analyze the presence or absence of relevant keywords from the job description.]
+
+###Structural Recommendations:
+- [Give specific tips to improve structure, layout, and scannability.]
+
+###Final Verdict:
+Pass/Fail: [State if it will likely pass ATS screening or not]
+
+---
+
+resume:{resume}
+
+job_desc:{job_desc}
+
+question:{question}
+"""
+
+match_score_prompt = """You're a resume-job matcher bot. Review the resume against the job description and provide a detailed scoring breakdown. Use the **strict format** below. No assistant tags, no emojis, no continuation after score summary.
+
+###Match Score:
+- Overall Match: X/100
+- Skill Match: X/25
+- Experience Match: X/25
+- Keyword Match: X/25
+- Role Relevance: X/25
+
+###Keyword Density:
+- Present Keywords: [List of matched keywords]
+- Missing Keywords: [List of important keywords that are not present]
+
+###Top Improvements to Increase Match:
+- [Short paragraph on what to add or adjust for a better match.]
+
+---
+
+resume:{resume}
+
+job_desc:{job_desc}
+
+question:{question}
+"""
+
+rewrite_helper_prompt = """You're a top-tier professional resume writer. Rewrite the provided resume to make it more polished, concise, and effective for the job described. Use the **strict format** below. No assistant tags, emojis, or any content outside this format. End after the rewrite.
+
+###Rewritten Summary:
+[Professionally rewritten version of the resume summary]
+
+###Rewritten Experience:
+[Bullet points rewritten using action verbs, impact-oriented language]
+
+###Rewritten Skills Section:
+[Optimized skill list using relevant keywords]
+
+---
+
+resume:{resume}
+
+job_desc:{job_desc}
+
+question:{question}
+"""
+
+if mode == "Default":
+    prompt_given = custom_prompt_template
+elif mode == "ATS Optimization":
+    prompt_given = ats_optimization_prompt
+elif mode == "Match Score":
+    prompt_given = match_score_prompt
+elif mode == "Rewrite Helper":
+    prompt_given = rewrite_helper_prompt
 
 prompt = PromptTemplate(
-    template=custom_prompt_template,
+    template=prompt_given,
     input_variables=["resume", "job_desc", "question"]
 )
 
