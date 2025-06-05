@@ -43,12 +43,11 @@ But don't worry, it's coming together faster than you can say _"Job Application!
 
 - 🔐 **Login System** – Let users save reviews securely  
 - 📥 **Downloadable PDF Reports** – Save your roasted resume report ✅ 
-- 🧪 **Mode Selector** – Choose between:
-  - Structured Resume Improvement + Keyword Injection  
-  - Friendly Roast  
-  - ATS-Focused Optimization  
-  - Match Score + Keyword Density  
-  - Professional Rewrite Helper  
+- 🧪 **Mode Selector** – Choose between: 
+  - Default: Structured Resume Improvement + Keyword Injection + Friendly roast ✅
+  - ATS-Focused Optimization ✅
+  - Match Score + Keyword Density ✅ 
+  - Professional Rewrite Helper ✅ 
 - 🎨 **UI Improvements** – Cleaner themes, animations, feedback metrics  
 - 📤 **Multi-format Support** – Support for PDF, DOCX upload  
 - 🗃️ **Review History Dashboard** – View and manage past analyses
