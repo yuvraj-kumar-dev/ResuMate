@@ -213,4 +213,10 @@ if uploaded_file and job_desc and hf_token:
         href = f'''{button_style} <a href="data:application/octet-stream;base64,{b64_pdf}" 
         download="RESU-MATE_Feedback.pdf" class="download-button">📄 Download Review</a>'''
         st.markdown(href, unsafe_allow_html=True)
+
+st.sidebar.markdown('<div style="position: fixed; bottom: 0; width: 20vw; min-width: 200px; z-index: 100; text-align: center; padding-bottom: 10px; background: transparent;">\
+<a href="https://www.producthunt.com/products/prompt-master?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-resumate-5" target="_blank">\
+<img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=975004&theme=neutral&t=1749229261530" alt="ResuMate - AI that roasts your resume in ATS, HR, or expert mode | Product Hunt" style="width: 250px; height: 54px; background: transparent;" />\
+</a>\
+</div>', unsafe_allow_html=True)
         
