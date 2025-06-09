@@ -2,32 +2,40 @@ import streamlit as st
 import requests
 from streamlit_lottie import st_lottie
 
-st.title("How to Get Your Own API")
-st.write(
-    "To get your own API, you need to follow these steps:"
-)
-st.write(
-    "1. **Create an account on Hugging Face**: Go to [Hugging Face](https://huggingface.co/) and create an account if you don't have one."
-) 
-st.write(
-    "2. **Generate an API token**: After logging in, go to your account settings and generate a new API token. This token will be used to authenticate your requests."
-)
-st.write(
-    "3. **AFter getting the token, just paste the token in the text input box**: In the ResuMate app, there is a text input box where you can paste your Hugging Face token. This will allow the app to access the Hugging Face API and use the models available there."
-)
+st.set_page_config(page_title="Hugging Face Token Guide", page_icon="🤗")
 
-def load_lottie_url(url: str):
-    r = requests.get(url)
-    if r.status_code != 200:
-        return None
-    return r.json()
+st.title("🔐 How to Get Your Hugging Face Access Token")
 
-# Load the animation JSON
-lottie_url = "https://lottie.host/516a1eeb-2173-4ba7-82ae-1fbf5b7f1b9c/dgM8ZzAwNL.json"
-lottie_json = load_lottie_url(lottie_url)
+st.markdown("Follow these steps to securely generate your Hugging Face token:")
 
-# Display the animation
-if lottie_json:
-    st_lottie(lottie_json, height=300)
-else:
-    st.error("Failed to load animation. Please check the URL.")
+st.subheader("🟢 Step 1: Sign In or Sign Up")
+st.markdown("""
+1. Go to [huggingface.co](https://huggingface.co)
+2. Click **Sign In** in the top-right corner
+3. Login with GitHub/Google or create an account using email
+""")
+
+st.subheader("🟢 Step 2: Go to Access Tokens")
+st.markdown("""
+1. Click your profile picture (top-right)
+2. Select **Settings**
+3. Go to **[Access Tokens](https://huggingface.co/settings/tokens)** in the left sidebar
+""")
+
+st.subheader("🟢 Step 3: Create a New Token")
+st.markdown("""
+1. Click on **“New token”**
+2. Set a name like `my-app-token`
+3. Set role:
+   - ✅ Use **Read** (recommended)
+   - ❗ Use **Write** or **Admin** only if needed
+4. Click **Generate**
+""")
+
+st.subheader("🟢 Step 4: Copy the Token Immediately")
+st.warning("📋 You won’t be able to see this token again. Copy and store it securely.")
+
+st.subheader("🟢 Step 5: Use the Token in Code")
+st.success("Paste this token in 'Enter your Hugging Face token' field in ResuMate.")
+
+st.success("You're now ready to use ResuMate🎉")
