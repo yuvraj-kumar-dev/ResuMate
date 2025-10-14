@@ -219,4 +219,11 @@ st.sidebar.markdown('<div style="position: fixed; bottom: 0; width: 20vw; min-wi
 <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=975004&theme=neutral&t=1749229261530" alt="ResuMate - AI that roasts your resume in ATS, HR, or expert mode | Product Hunt" style="width: 250px; height: 54px; background: transparent;" />\
 </a>\
 </div>', unsafe_allow_html=True)
-        
+
+hide_st_style = """
+            <style>
+    
+            footer {visibility: hidden;}
+            </style>
+    """
+st.markdown(hide_st_style, unsafe_allow_html=True)
