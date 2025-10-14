@@ -12,6 +12,15 @@ import fpdf
 import base64
 import re
 
+hide_st_style = """
+            <style>
+    
+            footer {visibility: hidden;}
+            </style>
+    """
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
+
 st.header("RESUMATE", divider=True)
 st.subheader("Your AI-Powered Resume Builder")
 
@@ -220,10 +229,3 @@ st.sidebar.markdown('<div style="position: fixed; bottom: 0; width: 20vw; min-wi
 </a>\
 </div>', unsafe_allow_html=True)
 
-hide_st_style = """
-            <style>
-    
-            footer {visibility: hidden;}
-            </style>
-    """
-st.markdown(hide_st_style, unsafe_allow_html=True)
