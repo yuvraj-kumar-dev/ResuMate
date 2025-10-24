@@ -1,29 +1,27 @@
 import streamlit as st
-from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
 import pdfplumber
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
-import os
-from langchain_huggingface import HuggingFaceEndpoint
+from langchain_core.prompts import PromptTemplate
 import fpdf
 import base64
 import re
+import os
+from huggingface_hub import InferenceClient
 
 st.header("RESUMATE", divider=True)
 st.subheader("Your AI-Powered Resume Builder")
 
+# Upload resume
 uploaded_file = st.file_uploader("Upload your resume in PDF format", type="pdf") 
-mode = st.radio("Select the mode", ["Default", ":rainbow[ATS Optimization]", ":rainbow[Match Score]", ":rainbow[Rewrite Helper]"])
+mode = st.radio("Select the mode", ["Default", "ATS Optimization", "Match Score", "Rewrite Helper"])
 job_desc = st.text_area("Enter the job description", placeholder="Paste job description here")
 
+# Hugging Face token input
 hf_token = st.text_input("Enter your Hugging Face token", type="password")
 if hf_token:
-    os.environ["HUGGINGFACEHUB_API_TOKEN"] = hf_token
+    os.environ["HF_TOKEN"] = hf_token
     st.success("Hugging Face token set successfully!")
 
+# PDF text extraction
 def extract_text_from_pdf(uploaded_file):
     all_text = ""
     with pdfplumber.open(uploaded_file) as pdf:
@@ -31,6 +29,7 @@ def extract_text_from_pdf(uploaded_file):
             all_text += page.extract_text() + "\n"
     return all_text
 
+# Clean response text
 def clean_response(text):
     text = re.sub(r'[^\u0000-\u2FFF]', '', text)
     text = re.sub(r'[\'"‘’“”«»‹›`´]', '', text)
@@ -41,6 +40,7 @@ if uploaded_file is not None:
     text = extract_text_from_pdf(uploaded_file)
     st.text_area("Extracted Text", text, height=300)
 
+# Button style
 button_style = """
     <style>
         .download-button {
@@ -63,8 +63,9 @@ button_style = """
     </style>
 """
 
+# Prompt templates
 custom_prompt_template = """You're the user's brutally honest best friend who also happens to be an expert hiring manager.
-Your task is to review their resume in light of the job description. Please follow this **strict output format** and don't use emojis and **not** include "assistant:" or any role tag:
+Your task is to review their resume in light of the job description. Please follow this strict output format and don't use emojis and not include "assistant:" or any role tag.
 Do not continue the conversation after the Friend Rating. End the response immediately after the rating.
 
 ###Roast:
@@ -94,7 +95,7 @@ job_desc:{job_desc}
 question:{question}
 """
 
-ats_optimization_prompt = """You're an expert in Applicant Tracking Systems (ATS) and resume parsing. Your job is to evaluate the resume's ability to pass through ATS filters based on the job description. Stick to the **strict output format** below. Do not add emojis, assistant tags, or extra commentary. End the response after the Final Verdict.
+ats_optimization_prompt = """You're an expert in Applicant Tracking Systems (ATS) and resume parsing. Your job is to evaluate the resume's ability to pass through ATS filters based on the job description. Stick to the strict output format below. End the response after the Final Verdict.
 
 ###Section Headers:
 - [Evaluate if standard ATS-readable headers like "Experience", "Education", etc. are used properly.]
@@ -117,7 +118,7 @@ job_desc:{job_desc}
 question:{question}
 """
 
-match_score_prompt = """You're a resume-job matcher bot. Review the resume against the job description and provide a detailed scoring breakdown. Use the **strict format** below. No assistant tags, no emojis, no continuation after score summary.
+match_score_prompt = """You're a resume-job matcher bot. Review the resume against the job description and provide a detailed scoring breakdown. Use the strict format below. End after the score summary.
 
 ###Match Score:
 - Overall Match: X/100
@@ -142,7 +143,7 @@ job_desc:{job_desc}
 question:{question}
 """
 
-rewrite_helper_prompt = """You're a top-tier professional resume writer. Rewrite the provided resume to make it more polished, concise, and effective for the job described. Use the **strict format** below. No assistant tags, emojis, or any content outside this format. End after the rewrite.
+rewrite_helper_prompt = """You're a top-tier professional resume writer. Rewrite the provided resume to make it more polished, concise, and effective for the job described. Use the strict format below. End after the rewrite.
 
 ###Rewritten Summary:
 [Professionally rewritten version of the resume summary]
@@ -162,6 +163,7 @@ job_desc:{job_desc}
 question:{question}
 """
 
+# Choose prompt based on mode
 if mode == "Default":
     prompt_given = custom_prompt_template
 elif mode == "ATS Optimization":
@@ -176,15 +178,23 @@ prompt = PromptTemplate(
     input_variables=["resume", "job_desc", "question"]
 )
 
-huggingface_repo_id = "HuggingFaceH4/zephyr-7b-beta"
-
-def load_llm(repo_id):
-    return HuggingFaceEndpoint(
-        repo_id=repo_id,
-        temperature=0.5,
-        huggingfacehub_api_token=hf_token,
+# Initialize Hugging Face InferenceClient
+def load_llm_via_inference_client():
+    client = InferenceClient(
+        provider="novita",
+        api_key=os.environ["HF_TOKEN"],
     )
+    return client
 
+# Function to query Llama-3.2-1B-Instruct
+def get_llm_response(client, prompt_text):
+    completion = client.chat.completions.create(
+        model="meta-llama/Llama-3.2-1B-Instruct",
+        messages=[{"role": "user", "content": prompt_text}],
+    )
+    return completion.choices[0].message["content"]
+
+# PDF creation
 def createpdf(text):
     pdf = fpdf.FPDF()
     pdf.add_page()
@@ -193,18 +203,16 @@ def createpdf(text):
     pdf_output = pdf.output(dest='S').encode('latin-1')
     return pdf_output
 
+# Resume analysis
 if uploaded_file and job_desc and hf_token:
-    llm = load_llm(huggingface_repo_id)
+    client = load_llm_via_inference_client()
     question = "How can this resume be strengthened to match the job description?"
-    chain = LLMChain(llm=llm, prompt=prompt)
-
+    prompt_text = prompt.format(resume=text, job_desc=job_desc, question=question)
+    
     if st.button("Analyze My Resume"):
         with st.spinner("Analyzing..."):
-            response = chain.run({
-                "resume": text,
-                "job_desc": job_desc,
-                "question": question
-            })
+            response = get_llm_response(client, prompt_text)
+        
         st.subheader("Real Talk: Resume Review 💬")
         st.write(response)
         pdf_bytes = createpdf(response)
@@ -214,9 +222,21 @@ if uploaded_file and job_desc and hf_token:
         download="RESU-MATE_Feedback.pdf" class="download-button">📄 Download Review</a>'''
         st.markdown(href, unsafe_allow_html=True)
 
-st.sidebar.markdown('<div style="position: fixed; bottom: 0; width: 20vw; min-width: 200px; z-index: 100; text-align: center; padding-bottom: 10px; background: transparent;">\
-<a href="https://www.producthunt.com/products/prompt-master?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-resumate-5" target="_blank">\
-<img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=975004&theme=neutral&t=1749229261530" alt="ResuMate - AI that roasts your resume in ATS, HR, or expert mode | Product Hunt" style="width: 250px; height: 54px; background: transparent;" />\
-</a>\
-</div>', unsafe_allow_html=True)
+# Sidebar Product Hunt badge
+st.sidebar.markdown(
+    '<div style="position: fixed; bottom: 0; width: 20vw; min-width: 200px; z-index: 100; text-align: center; padding-bottom: 10px; background: transparent;">'
+    '<a href="https://www.producthunt.com/products/prompt-master?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-resumate-5" target="_blank">'
+    '<img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=975004&theme=neutral&t=1749229261530" alt="ResuMate - AI that roasts your resume in ATS, HR, or expert mode | Product Hunt" style="width: 250px; height: 54px; background: transparent;" />'
+    '</a>'
+    '</div>',
+    unsafe_allow_html=True
+)
 
+# Hide Streamlit menu/footer
+hide_st_style = """
+<style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+</style>
+"""
+st.markdown(hide_st_style, unsafe_allow_html=True)
