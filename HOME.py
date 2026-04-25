@@ -5,7 +5,10 @@ import fpdf
 import base64
 import re
 import os
-from huggingface_hub import InferenceClient
+from langchain_groq import ChatGroq
+from dotenv import load_dotenv
+
+load_dotenv()
 
 st.header("RESUMATE", divider=True)
 st.subheader("Your AI-Powered Resume Builder")
@@ -15,11 +18,7 @@ uploaded_file = st.file_uploader("Upload your resume in PDF format", type="pdf")
 mode = st.radio("Select the mode", ["Default", "ATS Optimization", "Match Score", "Rewrite Helper"])
 job_desc = st.text_area("Enter the job description", placeholder="Paste job description here")
 
-# Hugging Face token input
-hf_token = st.text_input("Enter your Hugging Face token", type="password")
-if hf_token:
-    os.environ["HF_TOKEN"] = hf_token
-    st.success("Hugging Face token set successfully!")
+
 
 # PDF text extraction
 def extract_text_from_pdf(uploaded_file):
@@ -178,21 +177,11 @@ prompt = PromptTemplate(
     input_variables=["resume", "job_desc", "question"]
 )
 
-# Initialize Hugging Face InferenceClient
-def load_llm_via_inference_client():
-    client = InferenceClient(
-        provider="novita",
-        api_key=os.environ["HF_TOKEN"],
-    )
-    return client
 
-# Function to query Llama-3.2-1B-Instruct
-def get_llm_response(client, prompt_text):
-    completion = client.chat.completions.create(
-        model="meta-llama/Llama-3.2-1B-Instruct",
-        messages=[{"role": "user", "content": prompt_text}],
-    )
-    return completion.choices[0].message["content"]
+def get_llm_response(prompt_text):
+    llm = ChatGroq(model='llama-3.1-8b-instant')
+    res = llm.invoke(prompt_text)
+    return res.content
 
 # PDF creation
 def createpdf(text):
@@ -204,14 +193,13 @@ def createpdf(text):
     return pdf_output
 
 # Resume analysis
-if uploaded_file and job_desc and hf_token:
-    client = load_llm_via_inference_client()
+if uploaded_file and job_desc:
     question = "How can this resume be strengthened to match the job description?"
     prompt_text = prompt.format(resume=text, job_desc=job_desc, question=question)
     
     if st.button("Analyze My Resume"):
         with st.spinner("Analyzing..."):
-            response = get_llm_response(client, prompt_text)
+            response = get_llm_response(prompt_text)
         
         st.subheader("Real Talk: Resume Review 💬")
         st.write(response)
