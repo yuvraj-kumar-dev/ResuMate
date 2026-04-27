@@ -22,10 +22,8 @@ ResuMate makes sure your resume is job-ready by:
 
 1. **Upload Your Resume**: Simply upload your resume in PDF format.
 2. **Provide Job Description**: Enter the job description for the position you're targeting.
-3. **Enter your Hugging Face Token**: Paste your Hugging Face token to authorize the AI analysis.
-🔐 Don’t have one? [Click here to get your Hugging Face Token](https://resu-mate.streamlit.app/GET_YOUR_OWN_API)
-4. **AI-Powered Feedback**: ResuMate’s AI agent will analyze both your resume and the job description.
-5. **Receive Suggestions**: The agent will recommend changes to improve your resume, such as:
+3. **AI-Powered Feedback**: ResuMate’s AI agent will analyze both your resume and the job description.
+4. **Receive Suggestions**: The agent will recommend changes to improve your resume, such as:
 
    * Wording changes to highlight your skills.
    * Structural adjustments to make your resume more readable.
