@@ -7,18 +7,35 @@ import re
 import os
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
+from supabase_client import supabase
 
 load_dotenv()
 
+if "user" not in st.session_state:
+    st.session_state.user = None
+
+user = st.session_state.user
+
 st.header("RESUMATE", divider=True)
 st.subheader("Your AI-Powered Resume Builder")
+
+if user:
+    st.badge(f"Logged in as {user.email}")
+    if st.button("Logout"):
+        st.session_state.user = None
+        st.rerun()
+else:
+    st.badge(label="Guest Mode", icon=":material/person:")
+    if st.button("Login"):
+        st.switch_page("pages/Account.py")
 
 # Upload resume
 uploaded_file = st.file_uploader("Upload your resume in PDF format", type="pdf") 
 mode = st.radio("Select the mode", ["Default", "ATS Optimization", "Match Score", "Rewrite Helper"])
 job_desc = st.text_area("Enter the job description", placeholder="Paste job description here")
 
-
+if 'result' not in st.session_state:
+    st.session_state.result = None
 
 # PDF text extraction
 def extract_text_from_pdf(uploaded_file):
@@ -67,22 +84,22 @@ custom_prompt_template = """You're the user's brutally honest best friend who al
 Your task is to review their resume in light of the job description. Please follow this strict output format and don't use emojis and not include "assistant:" or any role tag.
 Do not continue the conversation after the Friend Rating. End the response immediately after the rating.
 
-###Roast:
+### Roast:
 - [Write a brutally honest but helpful roast of the resume. (2-3 sentences)]
 
-###What is Good:
+### What is Good:
 - [Highlight strengths in paragraph form.]
 
-###What is Missing:
+### What is Missing:
 - [Mention gaps or missing elements in paragraph form.]
 
-###Suggestions:
+### Suggestions:
 - [Give clear, actionable suggestions in paragraph form.]
 
-###Keywords to Add:
+### Keywords to Add:
 - [List relevant keywords from the job description that should be included in the resume. (1-2 sentences)]
 
-###Friend Rating:
+### Friend Rating:
 Score: X/10
 
 ---
@@ -96,16 +113,16 @@ question:{question}
 
 ats_optimization_prompt = """You're an expert in Applicant Tracking Systems (ATS) and resume parsing. Your job is to evaluate the resume's ability to pass through ATS filters based on the job description. Stick to the strict output format below. End the response after the Final Verdict.
 
-###Section Headers:
+### Section Headers:
 - [Evaluate if standard ATS-readable headers like "Experience", "Education", etc. are used properly.]
 
-###Keyword Match:
+### Keyword Match:
 - [Analyze the presence or absence of relevant keywords from the job description.]
 
-###Structural Recommendations:
+### Structural Recommendations:
 - [Give specific tips to improve structure, layout, and scannability.]
 
-###Final Verdict:
+### Final Verdict:
 Pass/Fail: [State if it will likely pass ATS screening or not]
 
 ---
@@ -119,18 +136,18 @@ question:{question}
 
 match_score_prompt = """You're a resume-job matcher bot. Review the resume against the job description and provide a detailed scoring breakdown. Use the strict format below. End after the score summary.
 
-###Match Score:
+### Match Score:
 - Overall Match: X/100
 - Skill Match: X/25
 - Experience Match: X/25
 - Keyword Match: X/25
 - Role Relevance: X/25
 
-###Keyword Density:
+### Keyword Density:
 - Present Keywords: [List of matched keywords]
 - Missing Keywords: [List of important keywords that are not present]
 
-###Top Improvements to Increase Match:
+### Top Improvements to Increase Match:
 - [Short paragraph on what to add or adjust for a better match.]
 
 ---
@@ -144,13 +161,13 @@ question:{question}
 
 rewrite_helper_prompt = """You're a top-tier professional resume writer. Rewrite the provided resume to make it more polished, concise, and effective for the job described. Use the strict format below. End after the rewrite.
 
-###Rewritten Summary:
+### Rewritten Summary:
 [Professionally rewritten version of the resume summary]
 
-###Rewritten Experience:
+### Rewritten Experience:
 [Bullet points rewritten using action verbs, impact-oriented language]
 
-###Rewritten Skills Section:
+### Rewritten Skills Section:
 [Optimized skill list using relevant keywords]
 
 ---
@@ -200,15 +217,30 @@ if uploaded_file and job_desc:
     if st.button("Analyze My Resume"):
         with st.spinner("Analyzing..."):
             response = get_llm_response(prompt_text)
-        
+            st.session_state.result = response 
+
+    if st.session_state.result:   
         st.subheader("Real Talk: Resume Review 💬")
-        st.write(response)
+        st.markdown(response)
         pdf_bytes = createpdf(response)
         b64_pdf = base64.b64encode(pdf_bytes).decode()
         st.success("Review Complete — Ready to Level Up 🎯")
         href = f'''{button_style} <a href="data:application/octet-stream;base64,{b64_pdf}" 
         download="RESU-MATE_Feedback.pdf" class="download-button">📄 Download Review</a>'''
         st.markdown(href, unsafe_allow_html=True)
+
+    if user:
+        if st.button("💾 Save Analysis"):
+            supabase.table("resume_analysis").insert({
+                "user_id": user.id,
+                "resume_text": text,
+                "job_description": job_desc,
+                "analysis": st.session_state.result
+            }).execute()
+
+            st.success("Saved successfully!")
+    else:
+        st.info("🔐 Login to save your analysis")
 
 # Sidebar Product Hunt badge
 st.sidebar.markdown(
